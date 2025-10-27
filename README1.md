@@ -9,7 +9,7 @@ import numpy as np
 import cv2
 
 # Configuration
-OUT_DIR = "ml_one_shape_per_image"
+OUT_DIR = "ml_shapes_robust"
 IMG_SIZE = 256
 NUM_IMAGES = 300
 SHAPES = ["circle", "triangle", "square", "pentagon", "hexagon", "star5"]
