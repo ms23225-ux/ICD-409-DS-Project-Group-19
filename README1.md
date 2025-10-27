@@ -1,6 +1,7 @@
 ```python
 #generates data for training
 
+
 import os, csv, math, random
 from math import cos, sin, pi
 from pathlib import Path
