@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("--csvdir", default="csvdata")
     parser.add_argument("--pattern", default="*.csv")
     parser.add_argument("--outdir", default="models")
-    parser.add_argument("--test_size", type=float, default=0.2)
+    parser.add_argument("--test_size", type=float, default=0.8)
     parser.add_argument("--cv_splits", type=int, default=5)
     parser.add_argument("--refit_prob_svc", action="store_true")
     args = parser.parse_args()
