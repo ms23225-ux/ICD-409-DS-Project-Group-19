@@ -1,5 +1,6 @@
 ```python
 #for creating, training and saving the model- shape detection
+#you have to put the data csv file into csvdata folder 
 
 
 import os, glob, argparse, joblib, numpy as np, pandas as pd
