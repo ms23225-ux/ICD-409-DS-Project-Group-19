@@ -107,6 +107,7 @@ def main(args):
             n_jobs=4, refit=True, verbose=0, error_score='raise', pre_dispatch='1*n_jobs'
         )
         gs.fit(X_train, y_train)
+        print(f"Model: {name:20s} | CV Accuracy: {gs.best_score_:.4f}")
         if gs.best_score_ > best_score:
             best_name, best_score, best_est, best_params = name, gs.best_score_, gs.best_estimator_, gs.best_params_
 
