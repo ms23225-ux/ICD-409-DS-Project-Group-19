@@ -108,11 +108,15 @@ def main(args):
             n_jobs=4, refit=True, verbose=0, error_score='raise', pre_dispatch='1*n_jobs'
         )
         gs.fit(X_train, y_train)
-        print(f"Model: {name:20s} | CV Accuracy: {gs.best_score_:.4f}")
+        y_pred_test = gs.best_estimator_.predict(X_test)
+        test_acc = accuracy_score(y_test, y_pred_test)
+        print(f"Model: {name:20s} | CV Accuracy: {gs.best_score_:.4f} | Test: {test_acc:.4f}")
+        if test_acc > best_score:
+            best_name, best_score, best_est, best_params = name, test_acc, gs.best_estimator_, gs.best_params_
         if gs.best_score_ > best_score:
             best_name, best_score, best_est, best_params = name, gs.best_score_, gs.best_estimator_, gs.best_params_
 
-    print(f"\n>>> Selected model: {best_name} with CV acc {best_score:.4f}")
+    print(f"\n>>> Selected model: {best_name} with Test acc {best_score:.4f}")
     print("    Params:", best_params)
 
     if best_name == "svc_rbf" and args.refit_prob_svc:
