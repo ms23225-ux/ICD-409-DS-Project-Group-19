@@ -1,6 +1,6 @@
 ```python
 #does shape detection for an image
-
+#you have to put the images in a folder titled test_images
 
 import argparse
 import joblib
@@ -16,7 +16,7 @@ DEFAULT_OUT  = "predictions.csv"
 DEFAULT_PANEL_DIR = "panels"
 
 
-FEATURES = ["area","perimeter","circularity","vertices","aspect_ratio","solidity"]
+FEATURES = ["area","perimeter","circularity","aspect_ratio","solidity", "vertices_hull","extent","eq_diameter","eccentricity", "hu1","hu2","hu3","hu4","hu5","hu6","hu7"]
 
 def _lazy_import_cv2():
     try:
@@ -135,18 +135,35 @@ def _maybe_split_contour(gray, contour, split=True, solidity_thresh=0.93, max_ve
 # Feature extraction
 def _features_from_contour(c):
     cv2 = _lazy_import_cv2()
+
     area = float(cv2.contourArea(c))
     peri = float(cv2.arcLength(c, True)) if area > 0 else 0.0
     circ = (4.0 * np.pi * area / (peri**2)) if peri > 0 else 0.0
-    eps = 0.02 * peri if peri > 0 else 1.0
-    approx = cv2.approxPolyDP(c, eps, True)
-    vertices = int(len(approx))
     x, y, w, h = cv2.boundingRect(c)
     ar = (w / h) if h > 0 else 0.0
+    extent = (area / (w * h)) if (w * h) > 0 else 0.0
+
     hull = cv2.convexHull(c)
     hull_area = float(cv2.contourArea(hull))
     solidity = (area / hull_area) if hull_area > 0 else 0.0
-    X = pd.DataFrame([[area, peri, circ, vertices, ar, solidity]], columns=FEATURES)
+    eps = 0.02 * peri if peri > 0 else 1.0
+    hull_approx = cv2.approxPolyDP(hull, eps, True)
+    vertices_hull = int(len(hull_approx))
+    eq_diameter = float(np.sqrt(4.0 * area / np.pi)) if area > 0 else 0.0
+
+    m = cv2.moments(c)
+    mu20, mu02, mu11 = m.get("mu20", 0.0), m.get("mu02", 0.0), m.get("mu11", 0.0)
+    cov = np.array([[mu20, mu11],[mu11, mu02]], dtype=float) + 1e-12 * np.eye(2)
+    evals, _ = np.linalg.eigh(cov)
+    evals = np.sort(evals)
+    eccentricity = float(np.sqrt(1.0 - (evals[0] / evals[1]))) if evals[1] > 0 else 0.0
+
+    hu = cv2.HuMoments(m).flatten()
+    hu = np.sign(hu) * np.log1p(np.abs(hu))
+    hu = [float(h) for h in hu[:7]]
+
+    vals = [area, peri, circ, ar, solidity, vertices_hull, extent, eq_diameter, eccentricity, *hu]
+    X = pd.DataFrame([vals], columns=FEATURES)
     bbox = (int(x), int(y), int(w), int(h))
     return X, bbox
 
